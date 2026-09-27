@@ -1,0 +1,18 @@
+REBUILT HAND TRACKING ENGINE
+
+The previous Tasks Vision tracker has been replaced with MediaPipe Hands
+direct webcam tracking.
+
+You will see:
+SCANNING = camera is running but no hand landmarks found.
+HAND FOUND = the model has found the hand.
+Yellow index-finger target = landmark 8 is being tracked.
+
+The hand model uses 21 landmarks and feeds the index finger directly into
+the game cursor.
+
+Internet is required because MediaPipe Hands and its model are loaded from
+jsDelivr.
+
+Run:
+START-GAME.bat -> http://localhost:5500

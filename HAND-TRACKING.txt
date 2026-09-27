@@ -1,0 +1,17 @@
+HAND TRACKING UPDATE
+
+The new build:
+- Uses a lower detection threshold for better hand detection.
+- Draws the complete hand skeleton over the camera.
+- Shows a large yellow fingertip target on the index finger.
+- Changes the target to white while pinching.
+- Shows "HAND DETECTED" when a hand is tracked.
+- Shows "SHOW YOUR HAND" when no hand is found.
+- Uses a slightly larger pinch threshold so picking is easier.
+
+Best conditions:
+- Keep the full hand inside the camera.
+- Face the palm toward the camera.
+- Use good room lighting.
+- Keep the hand roughly 40–100 cm from the webcam.
+- Avoid strong backlight.

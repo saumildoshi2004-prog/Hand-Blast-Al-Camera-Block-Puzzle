@@ -1,0 +1,16 @@
+CAMERA UI UPDATE
+
+Desktop/laptop:
+- Camera preview is now large and fixed on the RIGHT side.
+- Face/hand preview is much clearer.
+- Camera is 380x285 on normal desktop and larger on wide screens.
+- The game board stays on the left.
+
+Mobile:
+- Camera remains large above the board so the hand is easy to see.
+
+For best hand tracking:
+- Keep the hand 40–100 cm from the webcam.
+- Keep the whole hand inside the camera frame.
+- Use a reasonably bright room.
+- Avoid a bright window directly behind your hand.

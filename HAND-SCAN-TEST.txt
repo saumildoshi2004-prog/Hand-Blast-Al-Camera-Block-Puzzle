@@ -1,0 +1,22 @@
+HAND SCAN DIAGNOSTIC
+
+This build visibly shows whether the camera is scanning and whether a hand
+was actually found.
+
+Blue scan box + moving scan line:
+  Camera is active and the detector is looking for a hand.
+
+HAND FOUND:
+  The hand landmark model has detected a hand. The index finger gets a
+  yellow target and the hand skeleton appears.
+
+If the scan keeps saying SCANNING:
+  1. Put your entire hand inside the dashed box.
+  2. Palm toward camera.
+  3. Move closer (about 40–80 cm).
+  4. Use bright front lighting.
+  5. Remove gloves.
+  6. Reload the page.
+
+This build also falls back from GPU to CPU if the browser/GPU cannot run
+the MediaPipe hand model.

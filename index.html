@@ -1,0 +1,260 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+  <title>Hand Blast — AI Camera Block Puzzle</title>
+  <meta name="description" content="Pure AI camera hand-gesture controlled Block Blast puzzle with soft ambient music, exciting combos, super bombs, and neon effects.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800;900&family=Space+Grotesk:wght@600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- Ambient background glow elements (dynamically shifts with combos) -->
+  <div class="bg-glow bg-glow-1" id="bgGlow1"></div>
+  <div class="bg-glow bg-glow-2" id="bgGlow2"></div>
+  <div class="grid-overlay"></div>
+
+  <!-- Fullscreen Particle FX Canvas for Hand Stardust & Fireworks -->
+  <canvas id="cursorFx" class="cursor-fx-canvas"></canvas>
+
+  <!-- Start / Gate Modal -->
+  <div id="cameraGate" class="gate">
+    <div class="gate-card">
+      <div class="gate-header">
+        <div class="gate-icon-wrap">
+          <span class="gate-icon">✋</span>
+          <span class="gate-icon-pulse"></span>
+        </div>
+        <div class="badge-tag">PURE AI CAMERA CONTROL</div>
+      </div>
+      <h1 class="gate-title">HAND BLAST</h1>
+      <p class="gate-subtitle">Controlled 100% by your webcam with soft ambient music. Aim with your index finger, pinch your thumb and index finger to grab and place blocks.</p>
+      
+      <div class="gate-features">
+        <div class="feature-chip">
+          <span class="chip-icon">☝</span>
+          <span>Index Fingertip = Screen Pointer</span>
+        </div>
+        <div class="feature-chip">
+          <span class="chip-icon">🤏</span>
+          <span>Pinch Thumb + Index = Grab Block</span>
+        </div>
+        <div class="feature-chip">
+          <span class="chip-icon">🎵</span>
+          <span>Relaxing Chill Ambient Music & SFX</span>
+        </div>
+      </div>
+
+      <div class="gate-actions">
+        <button id="startCameraBtn" class="btn btn-primary" onclick="initGameWithCamera()">
+          <span class="btn-glow"></span>
+          <span class="btn-text">📷 ENABLE CAMERA & START GAME</span>
+        </button>
+      </div>
+
+      <div class="gate-footnote">
+        <span class="privacy-dot"></span> Camera processing stays 100% private in your browser.
+      </div>
+    </div>
+  </div>
+
+  <!-- Fullscreen Virtual Cursor for Hand Tracking with Energy Ring -->
+  <div id="virtualCursor" class="virtual-cursor hidden">
+    <div class="cursor-crosshair"></div>
+    <div class="cursor-ring"></div>
+    <div class="cursor-dot"></div>
+    <div class="cursor-state" id="cursorState">AIM</div>
+  </div>
+
+  <!-- Floating Dragged Piece Following Finger -->
+  <div id="dragGhost" class="drag-ghost hidden">
+    <canvas id="dragCanvas"></canvas>
+  </div>
+
+  <!-- Main Game Arena: 3-Column Cockpit Layout -->
+  <main id="app" class="app hidden">
+    <!-- Top Navigation Bar with Level Progression, Music & Scores -->
+    <header class="top-bar">
+      <div class="logo-group">
+        <div class="game-logo">HAND<span>BLAST</span></div>
+        <div id="comboBadge" class="combo-badge hidden">
+          <span class="combo-fire">🔥</span>
+          <span id="comboText">COMBO x2</span>
+        </div>
+      </div>
+
+      <!-- Level & XP Progression Bar -->
+      <div class="level-progress-wrap">
+        <span class="level-badge" id="levelBadge">LVL 1</span>
+        <div class="level-bar-track">
+          <div class="level-bar-fill" id="levelFill"></div>
+        </div>
+      </div>
+
+      <div class="stats-group">
+        <div class="stat-card">
+          <span class="stat-label">SCORE</span>
+          <b id="score" class="stat-val">0</b>
+        </div>
+        <div class="stat-card best">
+          <span class="stat-label">BEST</span>
+          <b id="best" class="stat-val">0</b>
+          <span id="crownIcon" class="crown-icon hidden">👑</span>
+        </div>
+      </div>
+
+      <!-- Audio Controls (Sound FX + Ambient Music) -->
+      <div class="controls-group">
+        <button id="musicToggle" class="icon-btn music-btn active" title="Toggle Soft Ambient Music" onclick="toggleMusic()">
+          <span id="musicIcon">🎵</span>
+          <span id="musicLabel" class="music-label">MUSIC</span>
+        </button>
+        <button id="soundToggle" class="icon-btn" title="Sound Mute / Unmute" onclick="toggleSound()">
+          <span id="soundIcon">🔊</span>
+        </button>
+        <button id="restartBtn" class="icon-btn reset-btn" title="Restart Game" onclick="restartGame()">
+          <span>↺</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- 3-Column Cockpit Arena -->
+    <div class="arena-layout">
+      <!-- 1. LEFT SIDE: Comfortably Lowered Blocks Rack -->
+      <aside class="pieces-column">
+        <div class="pieces-rack-wrap">
+          <div class="column-header">
+            <span class="col-icon">📦</span>
+            <span class="col-title">BLOCK ARSENAL</span>
+          </div>
+          <div class="pieces-rack" id="piecesDock">
+            <div class="piece-slot" data-i="0">
+              <canvas></canvas>
+              <div class="slot-glow"></div>
+              <div class="slot-num">1</div>
+              <div class="slot-hover-hint">PINCH TO GRAB</div>
+              <div class="bomb-tag hidden">💣 BOMB</div>
+            </div>
+            <div class="piece-slot" data-i="1">
+              <canvas></canvas>
+              <div class="slot-glow"></div>
+              <div class="slot-num">2</div>
+              <div class="slot-hover-hint">PINCH TO GRAB</div>
+              <div class="bomb-tag hidden">💣 BOMB</div>
+            </div>
+            <div class="piece-slot" data-i="2">
+              <canvas></canvas>
+              <div class="slot-glow"></div>
+              <div class="slot-num">3</div>
+              <div class="slot-hover-hint">PINCH TO GRAB</div>
+              <div class="bomb-tag hidden">💣 BOMB</div>
+            </div>
+          </div>
+        </div>
+      </aside>
+
+      <!-- 2. CENTER: 8x8 Board, Announcer & Guidance Banner -->
+      <section class="board-column">
+        <div class="board-outer" id="boardOuter">
+          <div class="board-frame">
+            <canvas id="board"></canvas>
+            <div id="flash" class="board-flash"></div>
+            <div id="floatingScores" class="floating-scores"></div>
+            <!-- Arcade Announcer Floating Banner -->
+            <div id="announcerBanner" class="announcer-banner hidden">
+              <div class="announcer-text" id="announcerText">DOUBLE BLAST!</div>
+              <div class="announcer-sub" id="announcerSub">+250 POINTS</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="guidance-bar" id="guidanceBar">
+          <span class="guidance-icon" id="guidanceIcon">☝</span>
+          <span class="guidance-text" id="guidanceText">Move index finger to aim • Pinch thumb & index to pick block</span>
+        </div>
+      </section>
+
+      <!-- 3. RIGHT SIDE: Large Camera HUD for Face & Fingertip Dots -->
+      <aside class="camera-column" id="cyberHud">
+        <div class="hud-panel">
+          <div class="hud-header">
+            <div class="hud-title-wrap">
+              <div class="status-pip" id="statusPip"></div>
+              <span class="hud-title">CAMERA & FACE VIEW</span>
+            </div>
+            <div class="camera-tag">AI VISION 60FPS</div>
+          </div>
+
+          <!-- Large Camera Viewport -->
+          <div class="camera-viewport" id="cameraViewport">
+            <video id="video" autoplay playsinline muted></video>
+            <canvas id="handCanvas"></canvas>
+
+            <!-- Hologram Scanner UI Overlay -->
+            <div class="scanner-overlay" id="scannerOverlay">
+              <div class="scan-bracket tl"></div>
+              <div class="scan-bracket tr"></div>
+              <div class="scan-bracket bl"></div>
+              <div class="scan-bracket br"></div>
+              <div class="scan-alert" id="scanAlert">INITIALIZING CAMERA…</div>
+            </div>
+          </div>
+
+          <!-- Live Pinch Sensor -->
+          <div class="hud-telemetry">
+            <div class="telemetry-row">
+              <span class="tele-label">PINCH SENSOR</span>
+              <span class="tele-val" id="pinchPct">0%</span>
+            </div>
+            <div class="pinch-meter-track">
+              <div class="pinch-meter-fill" id="pinchFill"></div>
+              <div class="pinch-threshold-marker" title="Grab Trigger Threshold"></div>
+            </div>
+
+            <div class="hud-status-banner" id="hudStatus">
+              SEARCHING FOR HAND…
+            </div>
+          </div>
+        </div>
+      </aside>
+    </div>
+  </main>
+
+  <!-- Game Over Modal -->
+  <div id="gameOver" class="modal-overlay hidden">
+    <div class="gameover-card">
+      <div class="over-badge">💥 NO MOVES REMAINING</div>
+      <h2 class="over-title">GAME OVER</h2>
+
+      <div class="score-display-card">
+        <div class="final-stat-box">
+          <span class="stat-sub">FINAL SCORE</span>
+          <b id="finalScore" class="stat-highlight">0</b>
+        </div>
+        <div class="stat-divider"></div>
+        <div class="final-stat-box">
+          <span class="stat-sub">ALL-TIME BEST</span>
+          <b id="finalBest" class="stat-highlight-gold">0</b>
+        </div>
+      </div>
+
+      <div class="over-stats-row">
+        <div class="mini-stat">Lines Cleared: <b id="finalLines">0</b></div>
+        <div class="mini-stat">Max Combo: <b id="finalMaxCombo">0x</b></div>
+      </div>
+
+      <button id="playAgainBtn" class="btn btn-primary btn-playagain" onclick="restartGame()">
+        <span class="btn-glow"></span>
+        <span class="btn-text">PLAY AGAIN</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- MediaPipe CDN scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js"></script>
+  <script src="game.js"></script>
+</body>
+</html>
